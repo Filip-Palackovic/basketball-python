@@ -1,7 +1,7 @@
 Basketball game in python
 =====================
 
-![Alt text](/Resources/Images/basketball-game.png?raw=true "basketball-game")
+![Alt text](/Resources/Images/basketball-game.PNG?raw=true "basketball-game")
 
 Requirements
 ------------
@@ -17,6 +17,6 @@ To play
 
 Game Over
 ------------
-![Alt text](/Resources/Images/game-over.png?raw=true "game-over")
+![Alt text](/Resources/Images/game-over.PNG?raw=true "game-over")
 * To activate the "zero gravity mode" press key s.
 * To back to normal mode press key n.
