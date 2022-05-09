@@ -18,5 +18,3 @@ To play
 Game Over
 ------------
 ![Alt text](/Resources/Images/game-over-screen.PNG?raw=true "game-over")
-* To activate the "zero gravity mode" press key s.
-* To back to normal mode press key n.
