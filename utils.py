@@ -1,11 +1,28 @@
 import pygame
 import random
-import math
 import os
 
 
 def get_path(*directories):
     return os.path.join(os.path.dirname(__file__), "Resources", *directories)
+
+
+def get_scale(size: int, real_size: int):
+    return real_size / size
+
+
+def get_real_size(scale: float, size: int):
+    return size * scale
+
+
+pygame.display.init()
+WIDTH, HEIGHT = 1920, 1080
+REAL_WIDTH, REAL_HEIGHT = (
+    pygame.display.Info().current_w,
+    pygame.display.Info().current_h,
+)
+W_SCALE = get_scale(WIDTH, REAL_WIDTH)
+H_SCALE = get_scale(HEIGHT, REAL_HEIGHT)
 
 
 class Images:
@@ -18,21 +35,50 @@ class Images:
 
     @classmethod
     def load_images(cls):
-        cls.background = pygame.image.load(
-            get_path("Images", "background.png")
-        ).convert_alpha()
-        cls.basket = pygame.image.load(get_path("Images", "basket.png")).convert_alpha()
-        cls.ball = pygame.image.load(get_path("Images", "ball.png")).convert_alpha()
-        cls.net = pygame.image.load(get_path("Images", "net.png")).convert_alpha()
-        cls.game_over = pygame.image.load(
-            get_path("Images", "game over screen.png")
-        ).convert_alpha()
+        def get_size_width(size: int):
+            return get_real_size(W_SCALE, size)
+
+        w = get_size_width
+
+        def get_size_height(size: int):
+            return get_real_size(H_SCALE, size)
+
+        h = get_size_height
+
+        def transform_image(image: pygame.Surface) -> pygame.Surface:
+            return pygame.transform.scale(
+                image, (w(image.get_width()), h(image.get_height()))
+            )
+
+        cls.background = transform_image(
+            pygame.image.load(get_path("Images", "background.png")).convert_alpha()
+        )
+
+        cls.basket = transform_image(
+            pygame.image.load(get_path("Images", "basket.png")).convert_alpha()
+        )
+
+        cls.ball = transform_image(
+            pygame.image.load(get_path("Images", "ball.png")).convert_alpha()
+        )
+
+        cls.net = transform_image(
+            pygame.image.load(get_path("Images", "net.png")).convert_alpha()
+        )
+        cls.game_over = transform_image(
+            pygame.image.load(
+                get_path("Images", "game over screen.png")
+            ).convert_alpha()
+        )
 
 
 class Fonts:
 
     pygame.font.init()
-    burbank = pygame.font.Font(get_path("Fonts", "BurbankBigCondensed-Bold.otf"), 120)
+    burbank = pygame.font.Font(
+        get_path("Fonts", "BurbankBigCondensed-Bold.otf"),
+        int(get_real_size(W_SCALE, 120)),
+    )
 
 
 class Sounds:
@@ -65,10 +111,10 @@ def measure_distance(xo, yo, x, y):
 
 
 def get_random_position(game):
-    VALID_X = (game.X_START + 30, game.X_START + 1300)
-    VALID_Y = (30, 820)
+    VALID_X = (int(game.w(game.X_START + 30)), int(game.w(game.X_START + 1300)))
+    VALID_Y = (int(game.h(30)), int(game.h(820)))
 
-    while pygame.Rect(0, 0, game.X_START + 548, 154).collidepoint(
+    while pygame.Rect(0, 0, game.w(game.X_START + 548), game.h(175)).collidepoint(
         coords := (random.randint(*VALID_X), random.randint(*VALID_Y))
     ):
         coords = random.randint(*VALID_X), random.randint(*VALID_Y)
