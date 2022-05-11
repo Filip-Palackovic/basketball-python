@@ -13,7 +13,9 @@ from utils import (
     convert_to_pygame,
     rot_center,
     get_random_position,
-    get_path
+    get_path,
+    get_scale,
+    get_real_size,
 )
 
 
@@ -45,14 +47,24 @@ class Match:
 
 
 class Game:
+    pygame.display.init()
 
     WIDTH, HEIGHT = 1920, 1080
-    WINDOW = pygame.display.set_mode((WIDTH, HEIGHT), pygame.FULLSCREEN)
+    REAL_WIDTH, REAL_HEIGHT = (
+        pygame.display.Info().current_w,
+        pygame.display.Info().current_h,
+    )
+    W_SCALE = get_scale(WIDTH, REAL_WIDTH)
+    H_SCALE = get_scale(HEIGHT, REAL_HEIGHT)
+
+    WINDOW = pygame.display.set_mode(
+        (WIDTH, HEIGHT), pygame.RESIZABLE | pygame.FULLSCREEN
+    )
 
     Images.load_images()
 
-    X_START = int(WIDTH / 2 - Images.background.get_size()[0] / 2)
-    X_END = int(WIDTH / 2 + Images.background.get_size()[0] / 2)
+    X_START = int(REAL_WIDTH / 2 - Images.background.get_size()[0] / 2)
+    X_END = int(REAL_WIDTH / 2 + Images.background.get_size()[0] / 2)
     FLOOR_HEIGHT = 888
     DRAW_OPTIONS = pymunk.pygame_util.DrawOptions(WINDOW)
 
@@ -76,37 +88,69 @@ class Game:
         )["highest_score"]
         self.screen: str = "game"
         self.match = Match(game=self)
+        self.w = self.get_size_width
+        self.h = self.get_size_height
+
+    def get_size_width(self, size: int):
+        return get_real_size(self.W_SCALE, size)
+
+    def get_size_height(self, size: int):
+        return get_real_size(self.H_SCALE, size)
 
     def load_music(self):
         pygame.mixer.init()
         pygame.mixer.music.load(get_path("Sounds", "Rainbow road Mario Kart DS.mp3"))
         pygame.mixer.music.play(-1)
         pygame.mixer.music.set_volume(0.5)
-    
+
     def create_boundaries(self):
         rects = [
-            [(self.X_START - 50, self.HEIGHT / 2), (100, self.HEIGHT)],
-            [(self.X_END + 50, self.HEIGHT / 2), (100, self.HEIGHT)],
-            [(self.WIDTH / 2, 0 - 50), (self.WIDTH, 100)],
-            [(self.WIDTH / 2, self.FLOOR_HEIGHT + 50), (self.WIDTH, 100)],
-            [(1464 + self.X_START, 265), (6, 6)],  #  Basket hoop
             [
-                ((1640 + 1692) / 2 + self.X_START, (582 + self.FLOOR_HEIGHT) / 2),
-                ((1692 - 1639), (self.FLOOR_HEIGHT - 582)),
+                (self.X_START - self.w(50), self.h(self.HEIGHT / 2)),
+                (self.w(100), self.h(self.HEIGHT)),
+            ],
+            [
+                (self.X_END + self.w(50), self.h(self.HEIGHT / 2)),
+                (self.w(100), self.h(self.HEIGHT)),
+            ],
+            [
+                (self.w(self.WIDTH / 2), self.h(0 - 50)),
+                (self.w(self.WIDTH), self.h(100)),
+            ],
+            [
+                (self.w(self.WIDTH / 2), self.h(self.FLOOR_HEIGHT + 50)),
+                (self.w(self.WIDTH), self.h(100)),
+            ],
+            [
+                (self.w(1464 + self.X_START), self.h(265)),
+                (self.w(6), self.h(6)),
+            ],  #  Basket hoop
+            [
+                (
+                    self.w((1640 + 1692) / 2 + self.X_START),
+                    self.h((582 + self.FLOOR_HEIGHT) / 2),
+                ),
+                (self.w(1692 - 1639), self.h(self.FLOOR_HEIGHT - 582)),
             ],  # Big basket base rectangle
-            [(1651 + self.X_START, 567), (42, 10)],  # Basket base "triangle"
-            [(1779.5, 404), (24, 276)],  # Small basket base rectangle
             [
-                ((1630 + 1654) / 2 + self.X_START, (72 + 376) / 2),
-                (26, 305),
+                (self.w(1651 + self.X_START), self.h(567)),
+                (self.w(42), self.h(10)),
+            ],  # Basket base "triangle"
+            [
+                (self.w(self.X_START + 1666.5), self.h(404)),
+                (self.w(24), self.h(276)),
+            ],  # Small basket base rectangle
+            [
+                (self.w((1630 + 1654) / 2 + self.X_START), self.h((72 + 376) / 2)),
+                (self.w(26), self.h(305)),
             ],  # Basket board
             [
-                (1471 + 36 / 2 + self.X_START, 274 + 140 / 2),
-                (5, 140),
+                (self.w(1471 + 36 / 2 + self.X_START), self.h(274 + 140 / 2)),
+                (self.w(5), self.h(140)),
             ],  # Basket net left hitbox
             [
-                (self.X_START + 1585 + 33 / 2, 339.5),
-                (5, 133),
+                (self.w(self.X_START + 1585 + 33 / 2), self.h(339.5)),
+                (self.w(5), self.h(133)),
             ],  # Basket net right hitbox
         ]
 
@@ -137,7 +181,7 @@ class Game:
     def create_ball(self):
         body = pymunk.Body(body_type=pymunk.Body.STATIC)
         body.position = get_random_position(self)
-        shape = pymunk.Circle(body, 30, (0, 0))
+        shape = pymunk.Circle(body, self.w(30), (0, 0))
         shape.mass = 10
         shape.color = (255, 0, 0, 100)
         shape.elasticity = 0.9
@@ -187,7 +231,7 @@ class Game:
                 elif not self.match.sound:
                     Sounds.game_over.play()
                     self.match.sound = True
-    
+
     def handle_keydowns(self, event: pygame.event.Event):
         if (event.type == pygame.QUIT) or (event.type == KEYDOWN and event.key == K_F4):
             self.run = False
@@ -222,9 +266,11 @@ class Game:
 
         elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
             if self.screen == "game over":
-                replay_button_vertical = pygame.Rect(self.X_START + 181, 681, 129, 218)
+                replay_button_vertical = pygame.Rect(
+                    self.w(self.X_START + 181), self.h(681), self.w(129), self.h(218)
+                )
                 replay_button_horizontal = pygame.Rect(
-                    self.X_START + 136, 725, 218, 129
+                    self.w(self.X_START + 136), self.h(725), self.w(218), self.h(129)
                 )
 
                 if pygame.mouse.get_pressed()[0] and (
@@ -238,8 +284,12 @@ class Game:
                     self.load_music()
                     self.match.clicked = False
 
-                quit_button_vertical = pygame.Rect(self.X_START + 1398, 679, 129, 218)
-                quit_button_horizontal = pygame.Rect(self.X_START + 1355, 723, 218, 129)
+                quit_button_vertical = pygame.Rect(
+                    self.w(self.X_START + 1398), self.h(679), self.w(129), self.h(218)
+                )
+                quit_button_horizontal = pygame.Rect(
+                    self.w(self.X_START + 1355), self.h(723), self.w(218), self.h(129)
+                )
 
                 if pygame.mouse.get_pressed()[0] and (
                     quit_button_vertical.collidepoint(self.x_mouse, self.y_mouse)
@@ -273,7 +323,7 @@ class Game:
             self.match.ball.body.body_type = pymunk.Body.DYNAMIC
             if self.x_mouse >= self.match.ball.body.position.x + 5:
                 self.mouse_distance = -self.mouse_distance
-            power = self.mouse_distance * 65
+            power = self.w(self.mouse_distance * 65)
             impulse = power * pymunk.Vec2d(1, 0)
             self.match.ball.body.apply_impulse_at_local_point(
                 impulse.rotated(self.angle)
@@ -284,32 +334,36 @@ class Game:
             self.angle = 0
 
     def count_score(self):
-        if self.match.ball and self.match.ball.body.body_type == pymunk.Body.DYNAMIC:
-            pos = convert_to_pygame(self.match.ball.body.position)
-            ball_rect = pygame.Rect(*pos, *Images.ball.get_size())
-            rect_1 = pygame.Rect(self.X_START + 1506, 320, 74, 4)
-            rect_2 = pygame.Rect(self.X_START + 1545, 372, 58, 4)
+        if not self.match.ball or self.match.ball.body.body_type != pymunk.Body.DYNAMIC:
+            return
+        pos = convert_to_pygame(self.match.ball.body.position)
+        ball_rect = pygame.Rect(*pos, *Images.ball.get_size())
 
-            self.match.collision_1 = self.match.collision_1 or ball_rect.colliderect(
-                rect_1
+        rect_1 = pygame.Rect(
+            self.w(self.X_START + 1506), self.h(320), self.w(74), self.h(4)
+        )
+        rect_2 = pygame.Rect(
+            self.w(self.X_START + 1505), self.h(372), self.w(58), self.h(4)
+        )
+
+        self.match.collision_1 = self.match.collision_1 or ball_rect.colliderect(rect_1)
+        if self.match.collision_1:
+            self.match.collision_2 = self.match.collision_2 or ball_rect.colliderect(
+                rect_2
             )
-            if self.match.collision_1:
-                self.match.collision_2 = (
-                    self.match.collision_2 or ball_rect.colliderect(rect_2)
-                )
-            elif ball_rect.colliderect(rect_2):
-                self.match.invalid = True
+        elif ball_rect.colliderect(rect_2):
+            self.match.invalid = True
 
-            if (
-                self.match.collision_1
-                and self.match.collision_2
-                and not self.match.scored
-                and not self.match.invalid
-            ):
-                self.score += 1
-                Sounds.score.play()
-                self.match.remaining_time = time.time() + 1.5
-                self.match.scored = True
+        if (
+            self.match.collision_1
+            and self.match.collision_2
+            and not self.match.scored
+            and not self.match.invalid
+        ):
+            self.score += 1
+            Sounds.score.play()
+            self.match.remaining_time = time.time() + 1.5
+            self.match.scored = True
 
     def draw_game(self):
         self.WINDOW.blit(Images.background, (self.X_START, 0))
@@ -319,12 +373,12 @@ class Game:
             image = rot_center(Images.ball, math.degrees(self.match.ball.body.angle))
             self.WINDOW.blit(image, pos)
 
-        self.WINDOW.blit(Images.net, (1445 + self.X_START, 0))
+        self.WINDOW.blit(Images.net, (self.w(1445 + self.X_START), self.h(0)))
 
-        self.WINDOW.blit(Images.basket, (1445 + self.X_START, 0))
+        self.WINDOW.blit(Images.basket, (self.w(1445 + self.X_START), self.h(0)))
 
         text = Fonts.burbank.render(f"Score: {self.score}", True, "#ffffff")
-        self.WINDOW.blit(text, (self.X_START + 40, 67))
+        self.WINDOW.blit(text, (self.w(self.X_START + 40), self.h(67)))
 
         if self.debug:
             self.space.debug_draw(self.DRAW_OPTIONS)
@@ -334,8 +388,8 @@ class Game:
 
         size = Fonts.burbank.size(f"Highest score: {self.highest_score}")
 
-        x_offset = self.X_START + 856 - size[0] / 2
-        y_offset = 675
+        x_offset = self.w(self.X_START + 856) - size[0] / 2
+        y_offset = self.h(675)
 
         score_text = Fonts.burbank.render(f"Score: {self.score}", True, "#ff6200")
         self.WINDOW.blit(score_text, (x_offset, y_offset))
