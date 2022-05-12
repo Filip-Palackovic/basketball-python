@@ -111,8 +111,8 @@ def measure_distance(xo, yo, x, y):
 
 
 def get_random_position(game):
-    VALID_X = (int(game.w(game.X_START + 30)), int(game.w(game.X_START + 1300)))
-    VALID_Y = (int(game.h(30)), int(game.h(820)))
+    VALID_X = (int(game.X_START + game.w(70)), int(game.X_START + game.w(1300)))
+    VALID_Y = (int(game.h(30)), int(game.h(800)))
 
     while pygame.Rect(0, 0, game.w(game.X_START + 548), game.h(175)).collidepoint(
         coords := (random.randint(*VALID_X), random.randint(*VALID_Y))
