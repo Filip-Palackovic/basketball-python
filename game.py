@@ -83,6 +83,7 @@ class Game:
         self.x_mouse: int = 0
         self.y_mouse: int = 0
         self.score = 0
+        self.r_disabled = False
         self.highest_score = json.load(
             open(__file__.replace("game.py", "scores.json"))
         )["highest_score"]
@@ -101,7 +102,7 @@ class Game:
         pygame.mixer.init()
         pygame.mixer.music.load(get_path("Sounds", "Rainbow road Mario Kart DS.mp3"))
         pygame.mixer.music.play(-1)
-        pygame.mixer.music.set_volume(0.5)
+        pygame.mixer.music.set_volume(1)
 
     def create_boundaries(self):
         rects = [
@@ -236,7 +237,9 @@ class Game:
         if (event.type == pygame.QUIT) or (event.type == KEYDOWN and event.key == K_F4):
             self.run = False
         if event.type == KEYDOWN:
-            if event.key == K_r:
+            if event.key == K_p:
+                self.r_disabled = not self.r_disabled
+            if event.key == K_r and not self.r_disabled:
                 self.match.restart()
             elif event.key == K_t:
                 self.update_highest_score()
@@ -323,7 +326,7 @@ class Game:
             self.match.ball.body.body_type = pymunk.Body.DYNAMIC
             if self.x_mouse >= self.match.ball.body.position.x + 5:
                 self.mouse_distance = -self.mouse_distance
-            power = self.w(self.mouse_distance * 65)
+            power = self.w(self.mouse_distance) * 65
             impulse = power * pymunk.Vec2d(1, 0)
             self.match.ball.body.apply_impulse_at_local_point(
                 impulse.rotated(self.angle)
@@ -378,7 +381,7 @@ class Game:
         self.WINDOW.blit(Images.basket, (self.w(1445 + self.X_START), self.h(0)))
 
         text = Fonts.burbank.render(f"Score: {self.score}", True, "#ffffff")
-        self.WINDOW.blit(text, (self.w(self.X_START + 40), self.h(67)))
+        self.WINDOW.blit(text, (self.w(40) + self.X_START, self.h(67)))
 
         if self.debug:
             self.space.debug_draw(self.DRAW_OPTIONS)
