@@ -9,7 +9,7 @@ Requirements
 pip install -r requirements.txt
 ```
 
-To play
+How to play?
 -------
 1. Clone the project.
 2. `python -m pip install -r requirements.txt`
