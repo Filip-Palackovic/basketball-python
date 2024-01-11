@@ -19,7 +19,22 @@ def run():
 
         game.x_mouse, game.y_mouse = pygame.mouse.get_pos()
 
-        game.handle_events()
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
+                pygame.quit()
+                sys.exit()
+
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                ball_velocity_y = -8
+                ball_velocity_x = 2  # Set horizontal velocity on click
+
+            ball_velocity_y += 8
+            ball
+            ball_rect.y += ball_velocity_y
+            ball_rect.x += ball_velocity_x  # Move ball horizontally
+
+        #game.handle_events()
 
         if game.screen == "game" and match.ball is None:
             game.create_ball()

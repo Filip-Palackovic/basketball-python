@@ -68,7 +68,7 @@ class Game:
     FLOOR_HEIGHT = 888
     DRAW_OPTIONS = pymunk.pygame_util.DrawOptions(WINDOW)
 
-    FPS = 60
+    FPS = 120
     DT = 1 / FPS
 
     def __init__(self) -> None:
@@ -106,18 +106,18 @@ class Game:
 
     def create_boundaries(self):
         rects = [
-            [
-                (self.X_START - self.w(50), self.h(self.HEIGHT / 2)),
-                (self.w(100), self.h(self.HEIGHT)),
-            ],
-            [
-                (self.X_END + self.w(50), self.h(self.HEIGHT / 2)),
-                (self.w(100), self.h(self.HEIGHT)),
-            ],
-            [
-                (self.w(self.WIDTH / 2), self.h(0 - 50)),
-                (self.w(self.WIDTH), self.h(100)),
-            ],
+ #           [
+ #               (self.X_START - self.w(50), self.h(self.HEIGHT / 2)),
+ #               (self.w(100), self.h(self.HEIGHT)),
+ #           ],
+ #           [
+ #               (self.X_END + self.w(50), self.h(self.HEIGHT / 2)),
+  #              (self.w(100), self.h(self.HEIGHT)),
+ #           ],
+ #           [
+  #              (self.w(self.WIDTH / 2), self.h(0 - 50)),
+  #              (self.w(self.WIDTH), self.h(100)),
+   #         ],
             [
                 (self.w(self.WIDTH / 2), self.h(self.FLOOR_HEIGHT + 50)),
                 (self.w(self.WIDTH), self.h(100)),
@@ -126,21 +126,21 @@ class Game:
                 (self.w(1464 + self.X_START), self.h(265)),
                 (self.w(6), self.h(6)),
             ],  #  Basket hoop
-            [
-                (
-                    self.w((1640 + 1692) / 2 + self.X_START),
-                    self.h((582 + self.FLOOR_HEIGHT) / 2),
-                ),
-                (self.w(1692 - 1639), self.h(self.FLOOR_HEIGHT - 582)),
-            ],  # Big basket base rectangle
-            [
-                (self.w(1651 + self.X_START), self.h(567)),
-                (self.w(42), self.h(10)),
-            ],  # Basket base "triangle"
-            [
-                (self.w(self.X_START + 1666.5), self.h(404)),
-                (self.w(24), self.h(276)),
-            ],  # Small basket base rectangle
+#            [
+ #               (
+#                    self.w((1640 + 1692) / 2 + self.X_START),
+##                    self.h((582 + self.FLOOR_HEIGHT) / 2),
+#                ),
+#                (self.w(1692 - 1639), self.h(self.FLOOR_HEIGHT - 582)),
+ #          ],  # Big basket base rectangle
+#            [
+#                (self.w(1651 + self.X_START), self.h(567)),
+#                (self.w(42), self.h(10)),
+#            ],  # Basket base "triangle"
+#            [
+ #               (self.w(self.X_START + 1666.5), self.h(404)),
+ #               (self.w(24), self.h(276)),
+#            ],  # Small basket base rectangle
             [
                 (self.w((1630 + 1654) / 2 + self.X_START), self.h((72 + 376) / 2)),
                 (self.w(26), self.h(305)),
@@ -181,7 +181,8 @@ class Game:
 
     def create_ball(self):
         body = pymunk.Body(body_type=pymunk.Body.STATIC)
-        body.position = get_random_position(self)
+        #body.position = get_random_position(self)
+        body.position = 900,200
         shape = pymunk.Circle(body, self.w(30), (0, 0))
         shape.mass = 10
         shape.color = (255, 0, 0, 100)
@@ -363,7 +364,11 @@ class Game:
             and not self.match.scored
             and not self.match.invalid
         ):
-            self.score += 1
+            streak = 0
+            if self.score > 3:
+                self.score += self.score-3
+            else:
+                self.score += 1
             Sounds.score.play()
             self.match.remaining_time = time.time() + 1.5
             self.match.scored = True
