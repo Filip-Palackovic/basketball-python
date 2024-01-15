@@ -68,7 +68,7 @@ class Game:
     FLOOR_HEIGHT = 888
     DRAW_OPTIONS = pymunk.pygame_util.DrawOptions(WINDOW)
 
-    FPS = 120
+    FPS = 60
     DT = 1 / FPS
 
     def __init__(self) -> None:
@@ -80,6 +80,11 @@ class Game:
         self.angle: int = 0
         self.mouse_distance: int = 0
         self.mouse_pressed: bool = False
+        self.SPACE_pressed: bool = False
+        self.ball_velocity_y: int = 0
+        self.ball_velocity_x: int = 0
+        self.ball_recty: int = 0
+        self.ball_rectx: int = 0
         self.x_mouse: int = 0
         self.y_mouse: int = 0
         self.score = 0
@@ -118,14 +123,14 @@ class Game:
   #              (self.w(self.WIDTH / 2), self.h(0 - 50)),
   #              (self.w(self.WIDTH), self.h(100)),
    #         ],
-            [
-                (self.w(self.WIDTH / 2), self.h(self.FLOOR_HEIGHT + 50)),
-                (self.w(self.WIDTH), self.h(100)),
-            ],
-            [
-                (self.w(1464 + self.X_START), self.h(265)),
-                (self.w(6), self.h(6)),
-            ],  #  Basket hoop
+            #[
+            #    (self.w(self.WIDTH / 2), self.h(self.FLOOR_HEIGHT + 50)),
+            #    (self.w(self.WIDTH), self.h(100)),
+            #],
+            #[
+            #    (self.w(1464 + self.X_START), self.h(265)),
+            #    (self.w(6), self.h(6)),
+            #],  #  Basket hoop
 #            [
  #               (
 #                    self.w((1640 + 1692) / 2 + self.X_START),
@@ -141,6 +146,9 @@ class Game:
  #               (self.w(self.X_START + 1666.5), self.h(404)),
  #               (self.w(24), self.h(276)),
 #            ],  # Small basket base rectangle
+            
+            
+            
             [
                 (self.w((1630 + 1654) / 2 + self.X_START), self.h((72 + 376) / 2)),
                 (self.w(26), self.h(305)),
@@ -191,21 +199,7 @@ class Game:
         self.space.add(body, shape)
         self.match.ball = shape
 
-    def sling_action(self):
-        ball_x, ball_y = self.match.ball.body.position
-        max_lenght = 250
 
-        self.mouse_distance = measure_distance(
-            ball_x, ball_y, self.x_mouse, self.y_mouse
-        )
-        if self.mouse_distance < max_lenght:
-            self.mouse_distance += 10
-
-        dy = self.y_mouse - ball_y
-        dx = self.x_mouse - ball_x
-        if dx == 0:
-            dx = 0.00000000000001
-        return math.atan((float(dy)) / dx), self.mouse_distance
 
     def update_highest_score(self):
         if self.score > self.highest_score:
@@ -235,6 +229,7 @@ class Game:
                     self.match.sound = True
 
     def handle_keydowns(self, event: pygame.event.Event):
+        self.SPACE_pressed = False
         if (event.type == pygame.QUIT) or (event.type == KEYDOWN and event.key == K_F4):
             self.run = False
         if event.type == KEYDOWN:
@@ -242,11 +237,15 @@ class Game:
                 self.r_disabled = not self.r_disabled
             if event.key == K_r and not self.r_disabled:
                 self.match.restart()
+            if event.key == K_SPACE:
+                self.SPACE_pressed = True
+                self.handle_ball_launch()
+                
             elif event.key == K_t:
                 self.update_highest_score()
                 self.screen = "game over"
 
-    def handle_mouse_events(self, event: pygame.event.Event):
+    def handle_mouse_events(self, event: pygame.event.Event): # Maus gedrückt ? 
         if self.match.ball:
             x, y = self.match.ball.body.position
             if (
@@ -310,68 +309,79 @@ class Game:
 
             self.handle_game_over_buttons(event)
 
-    def handle_ball_launch(self):
-        if self.mouse_pressed and self.match.ball.body.body_type == pymunk.Body.STATIC:
-            self.angle, self.mouse_distance = self.sling_action()
-            self.mouse_distance = min(self.mouse_distance, 250)
+            if event.type == pygame.MOUSEBUTTONUP and event.button == 1:
+                self.match.clicked = True  # Reset the clicked attribute
 
-        elif (
-            self.match.ball.body.body_type == pymunk.Body.STATIC and self.mouse_distance
-        ):
-            if (
-                self.match.start_time + 0.5 > time.time()
-            ):  # Avoids the ball from being launched when clicking the restart button.
-                self.mouse_distance = 0
-                self.angle = 0
-                return
+    def handle_ball_launch(self):
+            pos = convert_to_pygame(self.match.ball.body.position)
+            ball_rect = pygame.Rect(*pos, *Images.ball.get_size())
+            rect_hoop = pygame.Rect((self.w((1630 + 1654) / 2 + self.X_START), self.h((72 + 376) / 2)),(self.w(26), self.h(305)))
+            rect_hoop2 = pygame.Rect(
+            self.w(self.X_START + 1505), self.h(372), self.w(58), self.h(4)
+        )
+            if ball_rect.colliderect(rect_hoop):
+                self.ball_velocity_x = -7
+                self.ball_velocity_y = 5
+            if self.SPACE_pressed:
+                self.ball_velocity_y = -10
+                self.ball_velocity_x = 3
+                
+            self.ball_velocity_y += 0.2
+            self.ball_recty += self.ball_velocity_y
+            self.ball_rectx += self.ball_velocity_x
+
+            self.match.ball.body.position = self.ball_rectx, self.ball_recty    
+
             self.match.ball.body.body_type = pymunk.Body.DYNAMIC
-            if self.x_mouse >= self.match.ball.body.position.x + 5:
-                self.mouse_distance = -self.mouse_distance
-            power = self.w(self.mouse_distance) * 65
-            impulse = power * pymunk.Vec2d(1, 0)
-            self.match.ball.body.apply_impulse_at_local_point(
-                impulse.rotated(self.angle)
-            )
+
+            if (
+            self.match.collision_1
+            and self.match.collision_2
+            ):
+                self.score += 1
+                self.match.ball.body.position = 900,200
+                self.ball_velocity_y = 0
+                self.ball_velocity_x = 0
+                self.ball_rectx = 0
+                self.ball_recty = 0
+                #Sounds.score.play()
+                self.match.remaining_time = time.time() + 1.5
+                #self.match.scored = True
+
+            #current_position = self.match.ball.body.position
+            #offset = pymunk.Vec2d(0, 0) - current_position
+            #if self.x_mouse >= self.match.ball.body.position.x + 5:
+            #    self.mouse_distance = -self.mouse_distance
+            #power = self.w(self.mouse_distance) * 65
+            #self.angle=180
+            #power=100
+            #self.match.ball.surface_velocity = (100,300)
+           
+            
+
+            
+
+
+
+
+
+
+
+
+
+
+            #impulse = power * pymunk.Vec2d(15, -45)
+            #local_impulse = impulse - offset
+            #self.match.ball.body.apply_impulse_at_local_point(local_impulse)
+
+            #self.match.ball.body.position = 900,200
+
             Sounds.launch.play()
             self.match.remaining_time = time.time() + 5
             self.mouse_distance = 0
             self.angle = 0
 
-    def count_score(self):
-        if not self.match.ball or self.match.ball.body.body_type != pymunk.Body.DYNAMIC:
-            return
-        pos = convert_to_pygame(self.match.ball.body.position)
-        ball_rect = pygame.Rect(*pos, *Images.ball.get_size())
 
-        rect_1 = pygame.Rect(
-            self.w(self.X_START + 1506), self.h(320), self.w(74), self.h(4)
-        )
-        rect_2 = pygame.Rect(
-            self.w(self.X_START + 1505), self.h(372), self.w(58), self.h(4)
-        )
-
-        self.match.collision_1 = self.match.collision_1 or ball_rect.colliderect(rect_1)
-        if self.match.collision_1:
-            self.match.collision_2 = self.match.collision_2 or ball_rect.colliderect(
-                rect_2
-            )
-        elif ball_rect.colliderect(rect_2):
-            self.match.invalid = True
-
-        if (
-            self.match.collision_1
-            and self.match.collision_2
-            and not self.match.scored
-            and not self.match.invalid
-        ):
-            streak = 0
-            if self.score > 3:
-                self.score += self.score-3
-            else:
-                self.score += 1
-            Sounds.score.play()
-            self.match.remaining_time = time.time() + 1.5
-            self.match.scored = True
 
     def draw_game(self):
         self.WINDOW.blit(Images.background, (self.X_START, 0))

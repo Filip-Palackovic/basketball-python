@@ -56,7 +56,7 @@ while running:
 
         if event.type == pygame.MOUSEBUTTONDOWN:
             ball_velocity_y = FLAP_STRENGTH
-            ball_velocity_x = 2  #  horizontal velocity mit click
+            ball_velocity_x = 3  #  horizontal velocity mit click
 
     ball_velocity_y += GRAVITY
     ball_rect.y += ball_velocity_y
