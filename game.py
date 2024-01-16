@@ -70,6 +70,8 @@ class Game:
 
     FPS = 60
     DT = 1 / FPS
+    counter = 10
+    jumpt = False
 
     def __init__(self) -> None:
         self.run = True
@@ -80,11 +82,13 @@ class Game:
         self.angle: int = 0
         self.mouse_distance: int = 0
         self.mouse_pressed: bool = False
+
         self.SPACE_pressed: bool = False
         self.ball_velocity_y: int = 0
         self.ball_velocity_x: int = 0
         self.ball_recty: int = 0
         self.ball_rectx: int = 0
+
         self.x_mouse: int = 0
         self.y_mouse: int = 0
         self.score = 0
@@ -190,7 +194,7 @@ class Game:
     def create_ball(self):
         body = pymunk.Body(body_type=pymunk.Body.STATIC)
         #body.position = get_random_position(self)
-        body.position = 900,200
+        body.position = 0,0
         shape = pymunk.Circle(body, self.w(30), (0, 0))
         shape.mass = 10
         shape.color = (255, 0, 0, 100)
@@ -246,6 +250,10 @@ class Game:
                 self.screen = "game over"
 
     def handle_mouse_events(self, event: pygame.event.Event): # Maus gedrückt ? 
+        if (
+                self.match.start_time + 0.5 > time.time()
+            ):  # Avoids the ball from being launched when clicking the restart button.
+            return
         if self.match.ball:
             x, y = self.match.ball.body.position
             if (
@@ -312,74 +320,59 @@ class Game:
             if event.type == pygame.MOUSEBUTTONUP and event.button == 1:
                 self.match.clicked = True  # Reset the clicked attribute
 
+
     def handle_ball_launch(self):
-            pos = convert_to_pygame(self.match.ball.body.position)
-            ball_rect = pygame.Rect(*pos, *Images.ball.get_size())
-            rect_hoop = pygame.Rect((self.w((1630 + 1654) / 2 + self.X_START), self.h((72 + 376) / 2)),(self.w(26), self.h(305)))
-            rect_hoop2 = pygame.Rect(
-            self.w(self.X_START + 1505), self.h(372), self.w(58), self.h(4)
-        )
-            if ball_rect.colliderect(rect_hoop):
-                self.ball_velocity_x = -7
-                self.ball_velocity_y = 5
+            if (
+                self.match.start_time + 0.5 > time.time() and self.run == True
+            ):  # Avoids the ball from being launched when clicking the restart button.
+                self.ball_velocity_y=0
+                self.ball_velocity_x = 0
+                self.ball_recty=0
+                self.ball_rectx=0
+                return
+    
             if self.SPACE_pressed:
-                self.ball_velocity_y = -10
+                self.ball_velocity_y = -7
                 self.ball_velocity_x = 3
                 
             self.ball_velocity_y += 0.2
             self.ball_recty += self.ball_velocity_y
             self.ball_rectx += self.ball_velocity_x
-
+            
             self.match.ball.body.position = self.ball_rectx, self.ball_recty    
+
+            pos = convert_to_pygame(self.match.ball.body.position)
+            ball_rect = pygame.Rect(*pos, *Images.ball.get_size())
+
+            
+
+            EndBorder = pygame.Rect(self.X_END + self.w(50), self.h(0 - 50),self.w(100), self.h(self.FLOOR_HEIGHT+50))
+            if ball_rect.colliderect(EndBorder):
+                self.ball_rectx = 0
+                self.match.ball.body.position = 0,self.ball_recty 
+
+            HoopBorder = pygame.Rect(self.w(1464 + self.X_START), self.h(265),self.w(6), self.h(6))
+            BackbordBorder = pygame.Rect(self.w((1630 + 1654) / 2 + self.X_START), self.h((1500 + 376) / 2),self.w(26), self.h(700))
+            Net1 = pygame.Rect(self.w(1471 + 36 / 2 + self.X_START), self.h(274 + 140 / 2),self.w(5), self.h(140))
+            Net2 = pygame.Rect(self.w(self.X_START + 1585 + 33 / 2), self.h(339.5),self.w(5), self.h(133))
+            if ball_rect.colliderect(BackbordBorder) or ball_rect.colliderect(HoopBorder) or ball_rect.colliderect(Net1) or ball_rect.colliderect(Net2):
+                self.ball_velocity_y = 5
+                self.ball_velocity_x = -15
+
+            Goal = pygame.Rect(self.w(1500 + self.X_START), self.h(260),self.w(180), self.h(6))
+            if ball_rect.colliderect(Goal):
+                self.score += 1
+                self.ball_velocity_y = 0
+                self.ball_velocity_x = 3
+                self.ball_rectx = 0
+                self.match.ball.body.position = 0,self.ball_recty 
+                self.match.remaining_time = time.time() + 10
 
             self.match.ball.body.body_type = pymunk.Body.DYNAMIC
 
-            if (
-            self.match.collision_1
-            and self.match.collision_2
-            ):
-                self.score += 1
-                self.match.ball.body.position = 900,200
-                self.ball_velocity_y = 0
-                self.ball_velocity_x = 0
-                self.ball_rectx = 0
-                self.ball_recty = 0
-                #Sounds.score.play()
-                self.match.remaining_time = time.time() + 1.5
-                #self.match.scored = True
-
-            #current_position = self.match.ball.body.position
-            #offset = pymunk.Vec2d(0, 0) - current_position
-            #if self.x_mouse >= self.match.ball.body.position.x + 5:
-            #    self.mouse_distance = -self.mouse_distance
-            #power = self.w(self.mouse_distance) * 65
-            #self.angle=180
-            #power=100
-            #self.match.ball.surface_velocity = (100,300)
-           
+            #Sounds.launch.play()
             
 
-            
-
-
-
-
-
-
-
-
-
-
-            #impulse = power * pymunk.Vec2d(15, -45)
-            #local_impulse = impulse - offset
-            #self.match.ball.body.apply_impulse_at_local_point(local_impulse)
-
-            #self.match.ball.body.position = 900,200
-
-            Sounds.launch.play()
-            self.match.remaining_time = time.time() + 5
-            self.mouse_distance = 0
-            self.angle = 0
 
 
 
@@ -388,7 +381,7 @@ class Game:
 
         if self.match.ball:
             pos = convert_to_pygame(self.match.ball.body.position)
-            image = rot_center(Images.ball, math.degrees(self.match.ball.body.angle))
+            image = rot_center(Images.ball, 0)#math.degrees(self.match.ball.body.angle))
             self.WINDOW.blit(image, pos)
 
         self.WINDOW.blit(Images.net, (self.w(1445 + self.X_START), self.h(0)))

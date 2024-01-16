@@ -25,7 +25,7 @@ def run():
             game.create_ball()
 
         game.handle_ball_launch()
-
+        #game.ball_launch()
         #game.count_score()
 
         game.handle_screens()

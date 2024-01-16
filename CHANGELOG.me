@@ -1,7 +1,32 @@
-21.12.23
-Neustart - Ausversehen den Ordner überschrieben, als ich es in Github geladen habe
-Änderung der Gameborders unter def create_boundaries(self): in game.py
+# Changelog
+## Palackovic Filip - 5BHEL 2023/24
 
-Winterferien:
-In neuer Datei herumgespielt mit den Movements vom Ball bei jedem Click.
-Dabei nur Provisorisch ein neues File erstellt für Tests.
+The planned change for this project was, to make the ball flop like the bird from Floppy Bird to the basket hoop.
+The pymunk environment, this project relies on, turned out to not be the best option for me, because Pymunk 
+uses real phyisics. This worked great for the project I started with, but to make my changes I would have needed,
+to work with vectors and pulses witch act on the basketball. A lot of time was investet in the trying of getting 
+the vector to show to the same direction with every click, but I wasn't able to do it because of the rotation of 
+the basketball, which was unpredictable for me. That is, why I choose to take the "easy" way and do it with the 
+coordinates of the ball.
+
+## Boundaries 
+
+The function create_boundaries() was deletet, because I had no use for it, because my code workes with 
+coordinates.
+
+## Sling Action 
+
+The function sling_action() was also deletet, because no mouse angle is needed with the game change.
+
+## Keydowns
+
+A new Keydown-Event was created, to be able to know, when the Space bar was pressed.
+
+## Ball launch
+
+The function handle_ball_launch was changed completly. 
+This function contains:
+*** Ball Movement
+*** Scoring
+*** Boundaries
+
