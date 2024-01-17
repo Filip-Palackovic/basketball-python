@@ -1,18 +1,6 @@
 # Changelog
 ## Palackovic Filip - 5BHEL 2023/24
 
-The planned change for this project was, to make the ball flop like the bird from Floppy Bird to the basket hoop.
-The pymunk environment, this project relies on, turned out to not be the best option for me, because Pymunk 
-uses real phyisics. This worked great for the project I started with, but to make my changes I would have needed,
-to work with vectors and pulses witch act on the basketball. A lot of time was investet in the trying of getting 
-the vector to show to the same direction with every click, but I wasn't able to do it because of the rotation of 
-the basketball, which was unpredictable for me. That is, why I choose to take the "easy" way and do it with the 
-coordinates of the ball.
-
-## Boundaries 
-
-The function create_boundaries() was deletet, because I had no use for it, because my code workes with 
-coordinates.
 
 ## Sling Action 
 
@@ -29,4 +17,13 @@ This function contains:
 *** Ball Movement
 *** Scoring
 *** Boundaries
+*** Time
+
+
+### Boundaries
+Boundaries were added around the Basket. The ball bounches of these Boundaries
+
+### Time
+A shotclock was implemented. The ball needs to be scored for the shotclock to reset. The time also changes with the amount of buckets made.
+
 

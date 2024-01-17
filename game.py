@@ -30,7 +30,7 @@ class Match:
         self.invalid: bool = False
         self.clicked: bool = True
         self.remaining_time: int = None
-        self.start_time: int = time.time()
+        self.start_time: int = time.time() 
 
     def restart(self) -> None:
         self.game.space.remove(self.ball)
@@ -82,6 +82,7 @@ class Game:
         self.angle: int = 0
         self.mouse_distance: int = 0
         self.mouse_pressed: bool = False
+        self.time_bar_color = (255, 0, 0)
 
         self.SPACE_pressed: bool = False
         self.ball_velocity_y: int = 0
@@ -351,37 +352,43 @@ class Game:
                 self.ball_rectx = 0
                 self.match.ball.body.position = 0,self.ball_recty 
 
-            HoopBorder = pygame.Rect(self.w(1464 + self.X_START), self.h(265),self.w(6), self.h(6))
-            BackbordBorder = pygame.Rect(self.w((1630 + 1654) / 2 + self.X_START), self.h((1500 + 376) / 2),self.w(26), self.h(700))
-            Net1 = pygame.Rect(self.w(1471 + 36 / 2 + self.X_START), self.h(274 + 140 / 2),self.w(5), self.h(140))
-            Net2 = pygame.Rect(self.w(self.X_START + 1585 + 33 / 2), self.h(339.5),self.w(5), self.h(133))
+            HoopBorder = pygame.Rect(self.w(1464 + self.X_START), self.h(265),self.w(10), self.h(10))
+            HoopBorder2 = pygame.Rect(self.w(1600 + self.X_START), self.h(265),self.w(7), self.h(10))
+            BackbordBorder = pygame.Rect(self.w((1600 + 1654) / 2 + self.X_START), self.h(70),self.w(26), self.h(350))
+            Net1 = pygame.Rect(self.w(1471 + 36 / 2 + self.X_START), self.h(274 + 140 / 2),self.w(5), self.h(70))
+            Net2 = pygame.Rect(self.w(self.X_START + 1585 + 33 / 2), self.h(339.5),self.w(5), self.h(70))
             if ball_rect.colliderect(BackbordBorder) or ball_rect.colliderect(HoopBorder) or ball_rect.colliderect(Net1) or ball_rect.colliderect(Net2):
                 self.ball_velocity_y = 5
-                self.ball_velocity_x = -15
+                self.ball_velocity_x = -5
 
-            Goal = pygame.Rect(self.w(1500 + self.X_START), self.h(260),self.w(180), self.h(6))
+            if ball_rect.colliderect(HoopBorder2):
+                self.ball_velocity_y = -3
+                self.ball_velocity_x = -2
+
+            Goal = pygame.Rect(self.w(1500 + self.X_START), self.h(300),self.w(80), self.h(6))
             if ball_rect.colliderect(Goal):
+                if self.score < 5:
+                    self.match.remaining_time = time.time() + 15
+                elif self.score < 10:
+                    self.match.remaining_time = time.time() + 10
+                else:
+                    self.match.remaining_time = time.time() + 7
                 self.score += 1
                 self.ball_velocity_y = 0
                 self.ball_velocity_x = 3
                 self.ball_rectx = 0
                 self.match.ball.body.position = 0,self.ball_recty 
-                self.match.remaining_time = time.time() + 10
+                
 
             self.match.ball.body.body_type = pymunk.Body.DYNAMIC
 
-            #Sounds.launch.play()
             
-
-
-
-
     def draw_game(self):
         self.WINDOW.blit(Images.background, (self.X_START, 0))
 
         if self.match.ball:
             pos = convert_to_pygame(self.match.ball.body.position)
-            image = rot_center(Images.ball, 0)#math.degrees(self.match.ball.body.angle))
+            image = rot_center(Images.ball, 0)
             self.WINDOW.blit(image, pos)
 
         self.WINDOW.blit(Images.net, (self.w(1445 + self.X_START), self.h(0)))
@@ -391,6 +398,38 @@ class Game:
         text = Fonts.burbank.render(f"Score: {self.score}", True, "#ffffff")
         self.WINDOW.blit(text, (self.w(40) + self.X_START, self.h(67)))
 
+        if isinstance(self.match.remaining_time, float):
+            time_remaining = int(max(0, self.match.remaining_time - time.time()))+1
+            time_text = Fonts.burbank.render(f"Time: {time_remaining} seconds", True, "#ffffff")
+            self.WINDOW.blit(time_text, (self.w(40) + self.X_START, self.h(300)))
+
+
+            time_bar_width = self.w(500)
+            time_bar_height = self.h(20)
+            time_bar_x = self.w(500) + self.X_START
+            time_bar_y = self.h(100)
+
+            bar_width = self.w(800)
+            bar_height = self.h(70)
+            bar_x = self.w(475) + self.X_START
+            bar_y = self.h(75)
+
+            remaining_ratio = time_remaining/10
+            remaining_width = time_bar_width * remaining_ratio
+
+            pygame.draw.rect(
+                self.WINDOW,
+                (105,105,105),
+                (bar_x, bar_y, bar_width, bar_height),
+            )
+
+            pygame.draw.rect(
+                self.WINDOW,
+                self.time_bar_color,
+                (time_bar_x, time_bar_y, remaining_width, time_bar_height),
+            )
+
+          
         if self.debug:
             self.space.debug_draw(self.DRAW_OPTIONS)
 

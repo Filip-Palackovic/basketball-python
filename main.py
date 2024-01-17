@@ -28,7 +28,7 @@ def run():
         #game.ball_launch()
         #game.count_score()
 
-        game.handle_screens()
+        game.handle_screens() 
 
         game.draw()
         game.space.step(game.DT)
