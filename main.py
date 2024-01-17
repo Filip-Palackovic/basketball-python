@@ -8,7 +8,7 @@ def run():
 
     game = Game()
     game.debug = False
-    game.create_boundaries()
+    #game.create_boundaries()
     game.load_music()
 
     match = game.match

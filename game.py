@@ -114,87 +114,9 @@ class Game:
         pygame.mixer.music.play(-1)
         pygame.mixer.music.set_volume(1)
 
-    def create_boundaries(self):
-        rects = [
- #           [
- #               (self.X_START - self.w(50), self.h(self.HEIGHT / 2)),
- #               (self.w(100), self.h(self.HEIGHT)),
- #           ],
- #           [
- #               (self.X_END + self.w(50), self.h(self.HEIGHT / 2)),
-  #              (self.w(100), self.h(self.HEIGHT)),
- #           ],
- #           [
-  #              (self.w(self.WIDTH / 2), self.h(0 - 50)),
-  #              (self.w(self.WIDTH), self.h(100)),
-   #         ],
-            #[
-            #    (self.w(self.WIDTH / 2), self.h(self.FLOOR_HEIGHT + 50)),
-            #    (self.w(self.WIDTH), self.h(100)),
-            #],
-            #[
-            #    (self.w(1464 + self.X_START), self.h(265)),
-            #    (self.w(6), self.h(6)),
-            #],  #  Basket hoop
-#            [
- #               (
-#                    self.w((1640 + 1692) / 2 + self.X_START),
-##                    self.h((582 + self.FLOOR_HEIGHT) / 2),
-#                ),
-#                (self.w(1692 - 1639), self.h(self.FLOOR_HEIGHT - 582)),
- #          ],  # Big basket base rectangle
-#            [
-#                (self.w(1651 + self.X_START), self.h(567)),
-#                (self.w(42), self.h(10)),
-#            ],  # Basket base "triangle"
-#            [
- #               (self.w(self.X_START + 1666.5), self.h(404)),
- #               (self.w(24), self.h(276)),
-#            ],  # Small basket base rectangle
-            
-            
-            
-            [
-                (self.w((1630 + 1654) / 2 + self.X_START), self.h((72 + 376) / 2)),
-                (self.w(26), self.h(305)),
-            ],  # Basket board
-            [
-                (self.w(1471 + 36 / 2 + self.X_START), self.h(274 + 140 / 2)),
-                (self.w(5), self.h(140)),
-            ],  # Basket net left hitbox
-            [
-                (self.w(self.X_START + 1585 + 33 / 2), self.h(339.5)),
-                (self.w(5), self.h(133)),
-            ],  # Basket net right hitbox
-        ]
-
-        for index, payload in enumerate(rects):
-            pos, size = payload
-            pymunk.Body.KINEMATIC
-            body = pymunk.Body(body_type=pymunk.Body.STATIC)
-            body.position = pos
-
-            shape = pymunk.Poly.create_box(body, size)
-            shape.elasticity = 0.8
-            shape.friction = 1
-            shape.color = pygame.Color(124, 195, 2, 100)
-
-            if index == 6:
-                body.angle = -1.2217304
-            elif index == 8:
-                shape.elasticity = 0.2
-            elif index == 9:
-                body.angle = -3.4103733584
-                shape.elasticity = 0.2
-            elif index == 10:
-                body.angle = -2.8989918876
-                shape.elasticity = 0.2
-
-            self.space.add(body, shape)
 
     def create_ball(self):
         body = pymunk.Body(body_type=pymunk.Body.STATIC)
-        #body.position = get_random_position(self)
         body.position = 0,0
         shape = pymunk.Circle(body, self.w(30), (0, 0))
         shape.mass = 10
