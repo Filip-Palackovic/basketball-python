@@ -1,6 +1,8 @@
 # Changelog
 ## Palackovic Filip - 5BHEL 2023/24
 
+For my changes I had to switch from using impulses like in the original gamefile, to using the coordinates, thus I had to delete some function and implement them
+in other ways.
 
 * The boarders were adaptet so that the ball can be thrown from better, without hitting the top. (commit Test)
 
