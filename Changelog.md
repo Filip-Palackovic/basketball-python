@@ -20,10 +20,10 @@ A new Keydown-Event was created, to be able to know, when the Space bar was pres
 
 The function handle_ball_launch was changed completly.  (Update 1601)
 This function contains:
-* Ball Movement
-* Scoring
-* Boundaries
-* Time
+* Ball Movement like in Flappy Bird
+* Scoring 
+* Boundaries (Hoop, Backboard)
+* Time (Shotclock)
 
 
 ### Boundaries
